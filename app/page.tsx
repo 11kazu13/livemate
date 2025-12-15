@@ -1,65 +1,202 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+
+type Post = {
+  id: number;
+  title: string;
+  date: string; // "2025-12-20" みたいに来る
+  area: string;
+  comment: string | null;
+  x_username: string;
+  created_at: string;
+};
 
 export default function Home() {
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [area, setArea] = useState("");
+  const [comment, setComment] = useState("");
+  const [xUsername, setXUsername] = useState("");
+
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const isValid = useMemo(() => {
+    return title.trim() && date.trim() && area.trim() && xUsername.trim();
+  }, [title, date, area, xUsername]);
+
+  // 起動時にDBから読み込む
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/posts", { cache: "no-store" });
+        const data = await res.json();
+        if (data.ok) setPosts(data.posts);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!isValid) {
+      alert("ライブ名・日付・会場・Xユーザ名は必須です！");
+      return;
+    }
+
+    const payload = {
+      title,
+      date,
+      area,
+      comment,
+      xUsername,
+    };
+
+    const res = await fetch("/api/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!data.ok) {
+      alert(`投稿に失敗: ${data.error ?? "UNKNOWN"}`);
+      return;
+    }
+
+    // 返ってきたpostを先頭に追加
+    setPosts((prev) => [data.post as Post, ...prev]);
+
+    // deleteTokenはこの瞬間だけ表示（A方式）
+    alert(
+      `投稿完了！\n\n【削除キー】\n${data.deleteToken}\n\n※このキーは再発行できません。メモしてね。`
+    );
+
+    // reset
+    setTitle("");
+    setDate("");
+    setArea("");
+    setComment("");
+    setXUsername("");
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-gray-900 text-gray-100">
+      <header className="max-w-2xl mx-auto p-4">
+        <h1 className="text-2xl font-bold">ライブ同行掲示板</h1>
+        <p className="text-sm text-gray-400">
+          「ひとりで現場行くのがちょっと怖い…」を解決する掲示板です。
+        </p>
+      </header>
+
+      <main className="max-w-2xl mx-auto p-4 space-y-6">
+        <section className="bg-gray-800 rounded-lg p-4">
+          <h2 className="text-lg font-semibold mb-4">同行者を募集する</h2>
+
+          <form className="space-y-3" onSubmit={handleSubmit}>
+            <div>
+              <label className="block text-sm mb-1">ライブ名</label>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                type="text"
+                className="w-full rounded bg-gray-900 border border-gray-700 p-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">日付</label>
+              <input
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                type="date"
+                className="w-full rounded bg-gray-900 border border-gray-700 p-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">会場名</label>
+              <input
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+                type="text"
+                placeholder="例）Veats Shibuya"
+                className="w-full rounded bg-gray-900 border border-gray-700 p-2"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">Xユーザ名</label>
+              <input
+                value={xUsername}
+                onChange={(e) => setXUsername(e.target.value)}
+                type="text"
+                placeholder="例）@foo（@なしでもOK）"
+                className="w-full rounded bg-gray-900 border border-gray-700 p-2"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                連絡はXのユーザ名で行う想定です。
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm mb-1">ひとこと</label>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={2}
+                placeholder="初現場なので優しくしてください…など"
+                className="w-full rounded bg-gray-900 border border-gray-700 p-2"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-500 rounded p-2 font-medium disabled:opacity-50"
+              disabled={!isValid}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+              投稿する
+            </button>
+          </form>
+        </section>
+
+        <section className="bg-gray-800 rounded-lg p-4">
+          <h2 className="text-lg font-semibold mb-4">募集一覧</h2>
+
+          {loading ? (
+            <p className="text-gray-400 text-sm">読み込み中…</p>
+          ) : posts.length === 0 ? (
+            <p className="text-gray-400 text-sm">まだ投稿はありません。</p>
+          ) : (
+            <div className="space-y-3">
+              {posts.map((p) => (
+                <article key={p.id} className="bg-gray-900 rounded p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-semibold">{p.title}</h3>
+                    <span className="text-xs text-gray-400">
+                      {p.x_username}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-300 mt-1">
+                    {p.date} ｜ {p.area}
+                  </p>
+                  <p className="text-sm text-gray-200 mt-2">
+                    {p.comment ? p.comment : "ひとことは特になし"}
+                  </p>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
       </main>
+
+      <footer className="max-w-2xl mx-auto p-4 text-center text-xs text-gray-500">
+        © 2025 LiveMate
+      </footer>
     </div>
   );
 }
