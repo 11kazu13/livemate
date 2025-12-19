@@ -39,7 +39,7 @@ https://livemate.vercel.app/
 サーバー側にトークンの平文を保持しない設計にしています。
 
 
-crypto.randomBytes(2).toString("hex");
+```crypto.randomBytes(2).toString("hex");```
 という実装により、
 人間がコピペできる長さと十分なランダム性のバランスを意識しました。
 
