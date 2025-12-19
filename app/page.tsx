@@ -22,6 +22,10 @@ export default function Home() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const today = useMemo(() => {
+    return new Date().toISOString().split("T")[0];
+  }, []);
+
   const isValid = useMemo(() => {
     return title.trim() && date.trim() && area.trim() && xUsername.trim();
   }, [title, date, area, xUsername]);
@@ -84,6 +88,27 @@ export default function Home() {
     setXUsername("");
   }
 
+  // 日付入力の制御（今日以前の日付を選べないようにする）
+  function handleDateChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = e.target.value;
+
+    // ユーザーが入力を消去したいケースを許諾するため、空文字は許可
+    if (!v) {
+      setDate("");
+      return;
+    }
+
+    const selected = new Date(v);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0,);
+
+    if (selected >= today) {
+      setDate(v);
+    } else {
+      alert("過去の日付は選択できません（当日以降を選んでください）");
+    }
+  }
+
   async function handleDelete(id: number) {
   const deleteToken = prompt("削除キーを入力してください");
   if (!deleteToken) return;
@@ -136,7 +161,8 @@ export default function Home() {
               <label className="block text-sm mb-1">日付</label>
               <input
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                min={today}
+                onChange={handleDateChange}
                 type="date"
                 className="date-input w-full rounded bg-gray-900 border border-gray-700 p-2"
               />
