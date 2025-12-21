@@ -1,21 +1,30 @@
+// HTTPレスポンスを返すためのもの
 import { NextResponse } from "next/server";
+
+// 削除キーをハッシュ化して保存するための暗号ライブラリ
 import crypto from "crypto";
+
+// DB（supabase）にアクセスするための管理クライアント
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
+// 削除キーをランダムに生成
 function makeDeleteToken() {
-  // コピペしやすい感じに（長すぎない）
-  return crypto.randomBytes(2).toString("hex"); // 4文字の16進数
+  // コピペしやすい感じに１６進数４文字で生成
+  return crypto.randomBytes(2).toString("hex");
 }
 
+// 削除キーをハッシュ化
 function hashToken(token: string) {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
+// GETリクエスト：投稿一覧の取得
 export async function GET() {
+  // 分割代入でdataとerrorを取得
   const { data, error } = await supabaseAdmin
-    .from("posts")
-    .select("id,title,date,area,comment,x_username,created_at")
-    .order("created_at", { ascending: false });
+    .from("posts") // どのテーブルを見るか
+    .select("id,title,date,area,comment,x_username,created_at") // 取得するカラムを指定
+    .order("created_at", { ascending: false }); // created_atの降順
 
   if (error) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
