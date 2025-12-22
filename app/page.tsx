@@ -178,7 +178,7 @@ export default function Home() {
                 className="
                   w-full
                   rounded-[var(radius)]
-                  bg-[#0f1526]
+                  bg-[#2a0f45]
                   border border-[var(--border)]
                   px-4 py-2
                   text-sm
