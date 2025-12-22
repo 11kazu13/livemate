@@ -286,13 +286,15 @@ export default function Home() {
               className="
                 w-full
                 rounded-[var(--radius)]
-                bg-[var(accent)]
-                hover:opacity-90
-                text-white
+                bg-white
+                text-[#4f22b8]
+                font-semibold
                 py-2
-                font-medium
                 transition
+                hover:bg-[#f3e9ff]
+                hover:shadow-md
                 disabled:opacity-50
+                disabled:cursor-not-allowed
               "
               disabled={!isValid}
             >
