@@ -2,14 +2,14 @@
 
 :root {
   /* 基本の色味 */
-  --bg: #0b0f1a; /* 背景の色 */
-  --panel: #12182a; /* カードやフォームの色 */
-  --border: #1f2a44; /* 枠線の色 */
-  --text-main: #e6e9f2; /* 主要なテキストの色 */
-  --text-sub: #9aa4bf; /* 補助的なテキストの色 */
+  --bg: #4f22b8; /* 背景の色 */
+  --panel: #9240df; /* カードやフォームの色 */
+  --border: #9f7aad; /* 枠線の色 */
+  --text-main: #d8d8d8; /* 主要なテキストの色 */
+  --text-sub: #8d7190; /* 補助的なテキストの色 */
 
   /* アクセント */
-  --accent: #5b7cff;
+  --accent: #d563b6;
 
   /* UIのルール */
   --radius: 12px; /* 角丸の大きさ */
@@ -20,7 +20,7 @@
 body {
   background: radial-gradient( /* グラデーション */
     1200px 600px at top center,
-    #141b33,
+    #270f36,
     var(--bg)
   );
   color: var(--text-main);
