@@ -125,7 +125,7 @@ export default function Home() {
   // 指定された投稿を削除する処理
   async function handleDelete(id: number) {
     // 削除キー入力
-    const deleteToken = prompt("4桁の削除キーを入力してください");
+    const deleteToken = window.prompt("4桁の削除キーを入力してください");
     if (!deleteToken) return;
 
     const res = await fetch(`/api/posts/${id}`, {
