@@ -247,7 +247,13 @@ export default function Home() {
           </form>
         </section>
 
-        <section className="bg-gray-800 rounded-lg p-4">
+        <section className="
+          bg-[var(--panel)]
+          border border-[var(--border)]
+          rounded-[var(--radius-lg)]
+          shadow-[var(--shadow-soft)]
+          p-6
+        ">
           <h2 className="text-lg font-semibold mb-4">募集一覧</h2>
 
           {loading ? (
